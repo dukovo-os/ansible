@@ -6,9 +6,11 @@
 # nothing, then for real, then again, which changes nothing, and what it
 # changed is put back. The target runs as an administrator, through
 # Dukovo's sudo, which is elevate, so the inventory gives the account's
-# password as ansible_become_password.
+# password as ansible_become_password. Run it with ANSIBLE_GATHER_SUBSET=min,
+# which keeps ansible.builtin.setup to the facts that do not read Linux's
+# /proc and /sys, where Dukovo's /processes and /kernel differ.
 
-- name: Dukovo names itself in /etc/os-release
+- name: Dukovo names itself, as uname says
   ansible.builtin.assert:
     that:
       - ansible_facts.distribution == "Dukovo"

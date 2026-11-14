@@ -106,22 +106,13 @@ also in `/applications/commands`, which every session's `PATH` holds. Name it
 in the inventory with `ansible_python_interpreter`, as above; the full path
 keeps Ansible from searching for it.
 
-Python is a command that runs with the access of whoever runs it, as a
-program of the system's and not in a sandbox. Dukovo asks once whether it
-may, with a warning, and only at a console: no program, and no SSH session,
-can answer for the person (`bundle(1)`, PERMISSIONS). So before the first
-playbook, someone at the machine's console runs Python once as each account
-that will, and answers `A` for always:
-
-```
-$ python3 -c pass
-$ elevate python3 -c pass
-```
-
-The first is for the account Ansible signs in as, the second for root, who
-runs every task that has `become`. The answers are kept, so this is done
-once for each machine. Until it is, a module that finds Python asks a
-question nobody can answer, and the task fails.
+Name the interpreter by its path, as above, and not as `python3`. A command
+of a bundle that runs with the access of whoever runs it, as Python does, asks
+once at a console whether it may, with a warning, when it is run by its name;
+no SSH session can answer that question. Run by its path, as a script or
+Ansible runs it, the program asks nothing, as Dukovo's lab tests of Python
+show (`lab/tests/services/python-commands.toml`), so a playbook needs no one at
+the machine.
 
 ## Becoming an administrator
 
@@ -166,6 +157,7 @@ Three things differ from a Linux machine:
 ```yaml
 - hosts: dukovo
   become: true
+  gather_subset: [min]
   tasks:
     - name: Learn what the machine is
       dukovo.system.facts:
@@ -192,9 +184,14 @@ state first and runs a command only when the state is not as asked. With
 `--diff` shows the state before and after as the JSON of what the module
 manages.
 
-`ansible_facts.distribution` comes from `ansible.builtin.setup`, which
-reads `/etc/os-release`; `dukovo.system.facts` adds what only Dukovo knows,
-under `ansible_facts.dukovo`.
+`gather_subset: [min]` keeps `ansible.builtin.setup` to the facts that do not
+read Linux's files: `/proc` and `/sys` lead to Dukovo's `/processes` and
+`/kernel`, which are laid out in their own way, so the hardware facts that
+parse them have nothing to read. `ansible_facts.distribution` comes from
+`ansible.builtin.setup`, which takes
+the name of a system that is not Linux from the kernel's `uname`: `Dukovo`.
+`dukovo.system.facts` adds what only Dukovo knows, under
+`ansible_facts.dukovo`, the release that runs among it.
 
 ## The modules
 

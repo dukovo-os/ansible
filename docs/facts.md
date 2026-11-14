@@ -8,10 +8,13 @@ SPDX-License-Identifier: GPL-3.0-or-later
 Gather what Dukovo says of itself. The module's own reference is
 `ansible-doc dukovo.system.facts`.
 
-`ansible.builtin.setup` already names the system from `/etc/os-release`, so
-`ansible_facts.distribution` is `Dukovo` and `ansible_facts.distribution_version`
-is the release. This module adds what only Dukovo knows, under
-`ansible_facts.dukovo`. It changes nothing, and runs in check mode.
+`ansible.builtin.setup` already names the system, from the kernel's `uname`,
+which says `Dukovo` (as it does for any system that is not Linux, Ansible reads
+no `os-release` file), so `ansible_facts.distribution` is `Dukovo`. Its
+`distribution_version` is `uname`'s own version text, not the release. This
+module adds what only Dukovo knows, under `ansible_facts.dukovo`: the release
+that runs is `ansible_facts.dukovo.version`. It changes nothing, and runs in
+check mode.
 
 ## What it reads
 

@@ -15,9 +15,9 @@ version_added: 0.1.0
 description:
   - Gathers what Dukovo says of itself, from the C(--json) of C(sysupdate status), C(feature list),
     C(service list), C(bundle list) and C(dukovo-check --last), into RV(ansible_facts.dukovo).
-  - M(ansible.builtin.setup) names the system from C(/etc/os-release), so
+  - M(ansible.builtin.setup) names the system from the kernel's C(uname), which says Dukovo, so
     C(ansible_facts.distribution) is V(Dukovo) without this module. This one adds what only Dukovo
-    knows.
+    knows, the release that runs among it.
 extends_documentation_fragment:
   - ansible.builtin.action_common_attributes
   - ansible.builtin.action_common_attributes.facts
