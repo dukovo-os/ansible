@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2026 The Dukovo contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+version = 1
+
+[[annotations]]
+path = ["LICENSE", "LICENSES/**", "tests/unit/plugins/modules/fixtures/**", "tests/**/__init__.py"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 The Dukovo contributors"
+SPDX-License-Identifier = "GPL-3.0-or-later"
