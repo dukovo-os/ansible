@@ -1,0 +1,21 @@
+# SPDX-FileCopyrightText: 2026 The Dukovo contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# What the target changes on the machine, each of which it puts back.
+
+# A feature of the system's own, which needs no bundle.
+dukovo_feature: file-sharing
+
+# A service that is off when the target starts, and that the target turns on.
+dukovo_service: discoverd
+
+# A bundle of a catalog the machine has added, and the catalog.
+dukovo_bundle: io.github.burntsushi.ripgrep
+dukovo_catalog: test
+
+# A place of Btrfs subvolumes, and the name of the snapshot made there.
+dukovo_snapshot_place: /users
+dukovo_snapshot_name: dukovo-system-test
+
+# The channel the machine follows while the target runs.
+dukovo_channel: beta

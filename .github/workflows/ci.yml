@@ -1,0 +1,57 @@
+# SPDX-FileCopyrightText: 2026 The Dukovo contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# ansible-test's sanity and unit tests on each push and pull request, for the
+# oldest ansible-core the collection supports (meta/runtime.yml) and the
+# newest, and the license headers of every file. The integration target needs
+# a Dukovo machine, so Dukovo's own boot test and lab test run it.
+
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: ${{ matrix.test }} on ansible-core ${{ matrix.core }}, Python ${{ matrix.python }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { core: "2.17.*", python: "3.12", test: sanity }
+          - { core: "2.18.*", python: "3.13", test: sanity }
+          - { core: "2.19.*", python: "3.13", test: sanity }
+          - { core: "2.17.*", python: "3.12", test: units }
+          - { core: "2.18.*", python: "3.13", test: units }
+          - { core: "2.19.*", python: "3.13", test: units }
+    steps:
+      # ansible-test needs the collection at ansible_collections/NAMESPACE/NAME.
+      - name: Check out the collection
+        uses: actions/checkout@v4
+        with:
+          path: ansible_collections/dukovo/system
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Install ansible-core and pytest
+        run: python -m pip install "ansible-core==${{ matrix.core }}" pytest pytest-xdist
+
+      - name: Run ansible-test ${{ matrix.test }}
+        working-directory: ansible_collections/dukovo/system
+        run: ansible-test ${{ matrix.test }} --python ${{ matrix.python }} --color --verbose
+
+  reuse:
+    name: Licenses
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check that every file has its license and copyright
+        uses: fsfe/reuse-action@v5

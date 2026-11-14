@@ -1,0 +1,305 @@
+---
+# SPDX-FileCopyrightText: 2026 The Dukovo contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Each module is run in check mode, which says what would change and changes
+# nothing, then for real, then again, which changes nothing, and what it
+# changed is put back. The target runs as an administrator, through
+# Dukovo's sudo, which is elevate, so the inventory gives the account's
+# password as ansible_become_password.
+
+- name: Dukovo names itself in /etc/os-release
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.distribution == "Dukovo"
+
+- name: Learn what Dukovo says of itself
+  become: true
+  dukovo.system.facts:
+  register: dukovo_facts
+
+- name: The facts say what runs
+  ansible.builtin.assert:
+    that:
+      - dukovo_facts is not changed
+      - ansible_facts.dukovo.version is string
+      - ansible_facts.dukovo.slot in ["a", "b"]
+      - ansible_facts.dukovo.channel in ["stable", "beta", "nightly"]
+      - ansible_facts.dukovo.canary is boolean
+      - ansible_facts.dukovo.features is mapping
+      - ansible_facts.dukovo.services is mapping
+      - ansible_facts.dukovo.bundles is sequence
+      - ansible_facts.dukovo.features[dukovo_feature] == "not added"
+      - ansible_facts.dukovo.channel != dukovo_channel
+
+- name: Remember the channel
+  ansible.builtin.set_fact:
+    dukovo_first_channel: "{{ ansible_facts.dukovo.channel }}"
+
+- name: A feature
+  become: true
+  block:
+    - name: Add it in check mode
+      dukovo.system.feature:
+        name: "{{ dukovo_feature }}"
+      check_mode: true
+      diff: true
+      register: feature_check
+
+    - name: Check mode says what would change, and shows it
+      ansible.builtin.assert:
+        that:
+          - feature_check is changed
+          - feature_check.features[dukovo_feature] == "added"
+          - feature_check.commands == ["feature add --yes " ~ dukovo_feature]
+          - feature_check.diff.before.features[dukovo_feature] == "not added"
+          - feature_check.diff.after.features[dukovo_feature] == "added"
+
+    - name: Add it
+      dukovo.system.feature:
+        name: "{{ dukovo_feature }}"
+      register: feature_added
+
+    - name: Add it again
+      dukovo.system.feature:
+        name: "{{ dukovo_feature }}"
+      register: feature_again
+
+    - name: It changed once
+      ansible.builtin.assert:
+        that:
+          - feature_added is changed
+          - feature_added.features[dukovo_feature] == "added"
+          - feature_again is not changed
+          - feature_again.commands == []
+
+    - name: A feature that does not exist fails, saying which there are
+      dukovo.system.feature:
+        name: there-is-no-such-feature
+      register: feature_unknown
+      failed_when: false
+
+    - name: It failed
+      ansible.builtin.assert:
+        that:
+          - feature_unknown is failed
+          - "'there-is-no-such-feature' in feature_unknown.msg"
+          - "dukovo_feature in feature_unknown.msg"
+
+- name: A service
+  become: true
+  block:
+    - name: Turn it on in check mode
+      dukovo.system.service:
+        name: "{{ dukovo_service }}"
+        state: started
+        enabled: true
+      check_mode: true
+      register: service_check
+
+    - name: Turn it on
+      dukovo.system.service:
+        name: "{{ dukovo_service }}"
+        state: started
+        enabled: true
+      register: service_on
+
+    - name: Turn it on again
+      dukovo.system.service:
+        name: "{{ dukovo_service }}"
+        state: started
+        enabled: true
+      register: service_again
+
+    - name: It runs, and starts at boot
+      ansible.builtin.assert:
+        that:
+          - service_check is changed
+          - service_on is changed
+          - service_on.service.state == "running"
+          - service_on.service.enabled
+          - service_again is not changed
+
+    - name: Turn it off
+      dukovo.system.service:
+        name: "{{ dukovo_service }}"
+        state: stopped
+        enabled: false
+      register: service_off
+
+    - name: It is off
+      ansible.builtin.assert:
+        that:
+          - service_off is changed
+          - not service_off.service.enabled
+
+- name: A bundle
+  become: true
+  block:
+    - name: Install it in check mode
+      dukovo.system.bundle:
+        id: "{{ dukovo_bundle }}"
+        catalog: "{{ dukovo_catalog }}"
+      check_mode: true
+      register: bundle_check
+
+    - name: Install it
+      dukovo.system.bundle:
+        id: "{{ dukovo_bundle }}"
+        catalog: "{{ dukovo_catalog }}"
+      register: bundle_installed
+
+    - name: Install it again
+      dukovo.system.bundle:
+        id: "{{ dukovo_bundle }}"
+        catalog: "{{ dukovo_catalog }}"
+      register: bundle_again
+
+    - name: Hold it
+      dukovo.system.bundle:
+        id: "{{ dukovo_bundle }}"
+        state: held
+      register: bundle_held
+
+    - name: Let it go
+      dukovo.system.bundle:
+        id: "{{ dukovo_bundle }}"
+        state: unheld
+      register: bundle_unheld
+
+    - name: It is installed for everyone, and was held for a while
+      ansible.builtin.assert:
+        that:
+          - bundle_check is changed
+          - bundle_check.bundle.installed
+          - bundle_check.bundle.version is none
+          - bundle_installed is changed
+          - bundle_installed.bundle.installed
+          - bundle_installed.bundle.for_everyone
+          - bundle_installed.bundle.catalog == dukovo_catalog
+          - bundle_again is not changed
+          - bundle_held is changed
+          - bundle_held.bundle.held
+          - bundle_unheld is changed
+          - not bundle_unheld.bundle.held
+
+    - name: Remove it, with its data
+      dukovo.system.bundle:
+        id: "{{ dukovo_bundle }}"
+        state: absent
+        purge: true
+      register: bundle_removed
+
+    - name: Remove it again
+      dukovo.system.bundle:
+        id: "{{ dukovo_bundle }}"
+        state: absent
+      register: bundle_gone
+
+    - name: It is gone
+      ansible.builtin.assert:
+        that:
+          - bundle_removed is changed
+          - not bundle_removed.bundle.installed
+          - bundle_gone is not changed
+
+- name: A snapshot
+  become: true
+  block:
+    - name: Make it in check mode
+      dukovo.system.snapshot:
+        place: "{{ dukovo_snapshot_place }}"
+        name: "{{ dukovo_snapshot_name }}"
+      check_mode: true
+      diff: true
+      register: snapshot_check
+
+    - name: Make it
+      dukovo.system.snapshot:
+        place: "{{ dukovo_snapshot_place }}"
+        name: "{{ dukovo_snapshot_name }}"
+      register: snapshot_made
+
+    - name: Make it again
+      dukovo.system.snapshot:
+        place: "{{ dukovo_snapshot_place }}"
+        name: "{{ dukovo_snapshot_name }}"
+      register: snapshot_again
+
+    - name: It was made once
+      ansible.builtin.assert:
+        that:
+          - snapshot_check is changed
+          - dukovo_snapshot_name in snapshot_check.diff.after.snapshots
+          - dukovo_snapshot_name not in snapshot_check.diff.before.snapshots
+          - snapshot_made is changed
+          - dukovo_snapshot_name in snapshot_made.snapshots
+          - snapshot_again is not changed
+
+    - name: Remove it
+      dukovo.system.snapshot:
+        place: "{{ dukovo_snapshot_place }}"
+        name: "{{ dukovo_snapshot_name }}"
+        state: absent
+      register: snapshot_removed
+
+    - name: It is gone
+      ansible.builtin.assert:
+        that:
+          - snapshot_removed is changed
+          - dukovo_snapshot_name not in snapshot_removed.snapshots
+
+- name: The update channel
+  become: true
+  block:
+    - name: Follow another channel
+      dukovo.system.update:
+        state: channel
+        channel: "{{ dukovo_channel }}"
+      register: channel_set
+
+    - name: Follow it again
+      dukovo.system.update:
+        state: channel
+        channel: "{{ dukovo_channel }}"
+      register: channel_again
+
+    - name: The machine follows it
+      ansible.builtin.assert:
+        that:
+          - channel_set is changed
+          - channel_set.status.channel == dukovo_channel
+          - channel_again is not changed
+          - channel_again.running_version == ansible_facts.dukovo.version
+
+    - name: Follow the first channel again
+      dukovo.system.update:
+        state: channel
+        channel: "{{ dukovo_first_channel }}"
+      register: channel_back
+
+    - name: It does
+      ansible.builtin.assert:
+        that:
+          - channel_back is changed
+          - channel_back.status.channel == dukovo_first_channel
+
+- name: Take the feature away again
+  become: true
+  dukovo.system.feature:
+    name: "{{ dukovo_feature }}"
+    state: absent
+  register: feature_removed
+
+- name: What the machine says of itself afterwards is what it said before
+  become: true
+  dukovo.system.facts:
+
+- name: Nothing is left over
+  ansible.builtin.assert:
+    that:
+      - feature_removed is changed
+      - ansible_facts.dukovo.channel == dukovo_first_channel
+      - ansible_facts.dukovo.features[dukovo_feature] == "not added"
+      - ansible_facts.dukovo.services[dukovo_service] != "running"
+      - ansible_facts.dukovo.bundles | selectattr('id', 'equalto', dukovo_bundle) | list | length == 0
