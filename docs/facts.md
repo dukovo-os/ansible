@@ -39,7 +39,7 @@ every release that prints JSON, and a failure of one fails the task.
 | `held` | the versions held back, `system` and `firmware` |
 | `features` | each feature by its ID: `added`, `partly` or `not added` |
 | `services` | each service by its name, with its state in Spark's words |
-| `bundles` | each installed bundle: `id`, `version`, `for_everyone`, `held` and `update` |
+| `bundles` | each installed bundle: `id`, `version`, `for_everyone`, `held` and `newer`, the newer version its catalog lists, or `null` |
 | `check` | the last `dukovo-check`: `checked`, `release` and `counts` of `passed`, `warning`, `failed` and `skipped`, or `null` |
 
 ## Examples
@@ -55,7 +55,7 @@ every release that prints JSON, and a failure of one fails the task.
 
 - name: List the bundles that have a newer version
   ansible.builtin.debug:
-    msg: "{{ ansible_facts.dukovo.bundles | selectattr('update') | map(attribute='id') | list }}"
+    msg: "{{ ansible_facts.dukovo.bundles | selectattr('newer') | map(attribute='id') | list }}"
 ```
 
 ## Things to know

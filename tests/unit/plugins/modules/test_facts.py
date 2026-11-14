@@ -67,7 +67,7 @@ def test_the_facts_hold_the_features_the_services_and_the_bundles(machine):
     assert len(dukovo["services"]) == 5
     nginx = [each for each in dukovo["bundles"] if each["id"] == "org.nginx.nginx" and each["for_everyone"]]
     assert nginx == [
-        {"id": "org.nginx.nginx", "version": "1.2.0", "for_everyone": True, "held": False, "update": "1.3.0"}
+        {"id": "org.nginx.nginx", "version": "1.2.0", "for_everyone": True, "held": False, "newer": "1.3.0"}
     ]
     assert len(dukovo["bundles"]) == 3
 

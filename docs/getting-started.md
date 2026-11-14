@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
 
 # Getting started
 
-This page takes a control machine, anything that runs ansible-core 2.17 or
+This page takes a control machine, anything that runs ansible-core 2.22 or
 newer, to a playbook that manages a Dukovo machine: how it reaches the
 machine, where Python comes from, and how a task becomes an administrator.
 

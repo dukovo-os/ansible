@@ -100,7 +100,7 @@ ansible_facts:
           sample: {"sshd": "running"}
         bundles:
           description: The installed bundles, each with its V(id), V(version), V(for_everyone), V(held)
-            and V(update), the newer version its catalog lists.
+            and V(newer), the newer version its catalog lists, or V(null).
           type: list
           elements: dict
         check:
@@ -163,7 +163,7 @@ def gather(dukovo):
                 "version": each["version"],
                 "for_everyone": each["for_everyone"],
                 "held": each["held"],
-                "update": each["update"],
+                "newer": each["update"],
             }
             for each in dukovo.read(["bundle", "list", "--json"])["bundles"]
         ],

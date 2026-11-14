@@ -52,7 +52,7 @@ the module runs as.
 
 `bundle` holds the bundle as it is after the module ran, or as it would be in
 check mode: `id`, `for_everyone`, `installed`, `version`, `catalog`, `held` and
-`update`. `commands` lists the commands run, or that would run. With `--diff`,
+`newer`, the newer version its catalog lists, or `null`. `commands` lists the commands run, or that would run. With `--diff`,
 `before` and `after` are that same object.
 
 ## Things to know

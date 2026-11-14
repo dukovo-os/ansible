@@ -23,12 +23,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { core: "2.17.*", python: "3.12", test: sanity }
-          - { core: "2.18.*", python: "3.13", test: sanity }
-          - { core: "2.19.*", python: "3.13", test: sanity }
-          - { core: "2.17.*", python: "3.12", test: units }
-          - { core: "2.18.*", python: "3.13", test: units }
-          - { core: "2.19.*", python: "3.13", test: units }
+          - { core: "2.22.*", python: "3.13", test: sanity }
+          - { core: "2.22.*", python: "3.14", test: sanity }
+          - { core: "2.22.*", python: "3.13", test: units }
+          - { core: "2.22.*", python: "3.14", test: units }
     steps:
       # ansible-test needs the collection at ansible_collections/NAMESPACE/NAME.
       - name: Check out the collection

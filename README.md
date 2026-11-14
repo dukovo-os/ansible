@@ -28,8 +28,9 @@ shows the state before and after.
 
 ## Requirements
 
-- ansible-core 2.17 or newer on the control machine, and Python 3.10 or newer
-  there.
+- ansible-core 2.22 or newer on the control machine, and Python 3.13 or newer
+  there: Dukovo's Python is 3.15, and 2.22 is the first release of
+  ansible-core whose modules run under it.
 - A Dukovo machine with its SSH server turned on, and Python on it: Python is
   the `org.python.python` bundle, which a first playbook installs with
   `ansible.builtin.raw`.

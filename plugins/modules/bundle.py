@@ -124,8 +124,9 @@ bundle:
     held:
       description: Whether it is held at its version.
       type: bool
-    update:
-      description: The newest version the catalog lists when it is newer than the installed one.
+    newer:
+      description: The newest version the catalog lists when it is newer than the installed one,
+        or V(null).
       type: str
 commands:
   description: The commands the module ran, or would run in check mode.
@@ -150,7 +151,7 @@ def view(bundle_id, for_everyone, row):
         "version": row.get("version"),
         "catalog": row.get("catalog"),
         "held": bool(row.get("held")),
-        "update": row.get("update"),
+        "newer": row.get("update"),
     }
 
 
@@ -178,7 +179,7 @@ def plan(params, before):
         if params["catalog"]:
             install += ["--from", params["catalog"]]
         commands.append(install + scope + ["--yes"])
-    elif state == "latest" and before["update"] and not before["held"]:
+    elif state == "latest" and before["newer"] and not before["held"]:
         commands.append(["bundle", "update", bundle_id] + scope + ["--yes"])
     if state == "held" and not before["held"]:
         commands.append(["bundle", "hold", bundle_id] + scope)
@@ -196,8 +197,8 @@ def predict(params, before):
         return after
     if not before["installed"]:
         after.update(installed=True, catalog=params["catalog"])
-    elif state == "latest" and before["update"] and not before["held"]:
-        after.update(version=before["update"], update=None)
+    elif state == "latest" and before["newer"] and not before["held"]:
+        after.update(version=before["newer"], newer=None)
     if state == "held":
         after["held"] = True
     return after
@@ -226,10 +227,10 @@ def main():
         params["for_everyone"],
         find(dukovo.read(listed), params["id"], params["for_everyone"]),
     )
-    if params["state"] == "latest" and before["held"] and before["update"]:
+    if params["state"] == "latest" and before["held"] and before["newer"]:
         module.warn(
             "%s is held at %s, so %s waits; state=unheld lets it update"
-            % (params["id"], before["version"], before["update"])
+            % (params["id"], before["version"], before["newer"])
         )
     commands = plan(params, before)
     if not commands:
