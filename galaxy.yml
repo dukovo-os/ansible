@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: 2026 The Dukovo contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+namespace: dukovo
+name: system
+version: 0.1.0
+readme: README.md
+authors:
+  - The Dukovo contributors
+description: Modules that manage Dukovo, the operating system with its own kernel, Radix, from Ansible
+license:
+  - GPL-3.0-or-later
+tags:
+  - dukovo
+  - system
+  - updates
+  - bundles
+repository: https://github.com/dukovo-os/ansible
+documentation: https://github.com/dukovo-os/ansible/tree/main/docs
+homepage: https://dukovo.org/
+issues: https://github.com/dukovo-os/ansible/issues
+build_ignore:
+  - .github
+  - tests/output
+  - "*.tar.gz"

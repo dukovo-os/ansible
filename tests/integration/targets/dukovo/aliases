@@ -1,0 +1,7 @@
+# SPDX-FileCopyrightText: 2026 The Dukovo contributors
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Needs a Dukovo machine, which ansible-test's own containers and clouds do
+# not make: the inventory names one, and Dukovo's boot test runs this target's
+# tasks against a machine in QEMU.
+unsupported
