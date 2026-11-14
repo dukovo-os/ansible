@@ -42,9 +42,13 @@ the inventory, Python, and `become`.
 
 ## Install
 
+From the tarball of a [release](https://github.com/dukovo-os/ansible/releases):
+
 ```
-$ ansible-galaxy collection install dukovo.system
+$ ansible-galaxy collection install https://github.com/dukovo-os/ansible/releases/download/v0.1.0/dukovo-system-0.1.0.tar.gz
 ```
+
+The collection is not on Ansible Galaxy yet.
 
 ## Example
 
@@ -90,6 +94,14 @@ from `ansible_collections/dukovo/system` in a checkout laid out that way.
 `tests/integration/targets/dukovo/` runs the modules against a Dukovo machine
 that is given as the inventory. Dukovo's own boot test and lab test run a
 playbook of the same modules against a machine in QEMU and an installed one.
+
+## Releases
+
+A tag `vVERSION`, where VERSION is the version in `galaxy.yml`, makes a
+release: the Release workflow builds the tarball with
+`ansible-galaxy collection build` and attaches it, with its SHA-256, to the
+GitHub release of the tag. Dukovo's tests pin a release by its URL and that
+hash, in `tools/xtask/src/test/ansible.lock` of the Dukovo tree.
 
 ## License
 

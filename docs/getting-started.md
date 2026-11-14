@@ -11,12 +11,16 @@ machine, where Python comes from, and how a task becomes an administrator.
 
 ## Install the collection
 
+From the tarball of a [release](https://github.com/dukovo-os/ansible/releases),
+whose page gives the tarball's SHA-256:
+
 ```
-$ ansible-galaxy collection install dukovo.system
+$ ansible-galaxy collection install https://github.com/dukovo-os/ansible/releases/download/v0.1.0/dukovo-system-0.1.0.tar.gz
 ```
 
-Or from a tarball, with `ansible-galaxy collection build` in a checkout and
-`ansible-galaxy collection install dukovo-system-0.1.0.tar.gz`.
+Or from a checkout: `ansible-galaxy collection build` makes the tarball, and
+`ansible-galaxy collection install dukovo-system-0.1.0.tar.gz` installs it.
+The collection is not on Ansible Galaxy yet.
 
 The modules run Dukovo's own commands (`bundle`, `feature`, `service`,
 `snap`, `sysupdate`, `update`) and read what they print with `--json`, so a
