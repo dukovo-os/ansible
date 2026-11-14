@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "checked": "2026-11-12T05:17:03Z",
+  "release": "0.15.0",
+  "results": [
+    {"area": "ssh", "check": "passwords", "result": "warning", "detail": "passwords sign in over SSH", "id": "SEC-110", "fix": "Add your SSH key."},
+    {"area": "health", "check": "hardware", "result": "skipped", "detail": "hardware check has not run on this computer"}
+  ],
+  "counts": {"passed": 13, "warning": 1, "failed": 0, "skipped": 1}
+}

@@ -1,0 +1,7 @@
+{"show_version":1,"now_ms":51234,"services":[
+ {"name":"consoled","description":"Virtual consoles","enabled":true,"state":"running","pid":41},
+ {"name":"nginx","description":"nginx web server","enabled":false,"state":"disabled"},
+ {"name":"sshd","description":"Secure shell","enabled":false,"state":"running","pid":77},
+ {"name":"web","description":"Web server","enabled":true,"state":"failed","failures":5},
+ {"name":"snap","description":"Snapshots","enabled":true,"state":"stopped"}
+],"shutdown":null,"trials":[],"undone":[]}
