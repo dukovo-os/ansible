@@ -97,11 +97,12 @@ playbook of the same modules against a machine in QEMU and an installed one.
 
 ## Releases
 
-A tag `vVERSION`, where VERSION is the version in `galaxy.yml`, makes a
-release: the Release workflow builds the tarball with
-`ansible-galaxy collection build` and attaches it, with its SHA-256, to the
-GitHub release of the tag. Dukovo's tests pin a release by its URL and that
-hash, in `tools/xtask/src/test/ansible.lock` of the Dukovo tree.
+The Release workflow makes release `vVERSION`, where VERSION is the version
+in `galaxy.yml`: run it from the Actions tab on main, which makes the tag, or
+push the tag. It builds the tarball with `ansible-galaxy collection build`
+and attaches it, with its SHA-256, to the GitHub release, and refuses a
+version that is released already. Dukovo's tests pin a release by its URL
+and that hash, in `tools/xtask/src/test/ansible.lock` of the Dukovo tree.
 
 ## License
 
