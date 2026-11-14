@@ -1,10 +1,12 @@
 # SPDX-FileCopyrightText: 2026 The Dukovo contributors
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# A tag vVERSION, of the version galaxy.yml gives, releases the collection: the
-# tarball `ansible-galaxy collection build` makes is attached to a GitHub
-# release of the tag, with its SHA-256, which Dukovo's ansible.lock pins.
-# Nothing is published to Ansible Galaxy.
+# Releases the collection: the tarball `ansible-galaxy collection build`
+# makes is attached to a GitHub release, vVERSION for the version galaxy.yml
+# gives, with its SHA-256, which Dukovo's ansible.lock pins. A pushed tag
+# vVERSION starts it, or "Run workflow" on main, which makes the tag at the
+# commit it runs on. A version already released is refused. Nothing is
+# published to Ansible Galaxy.
 
 name: Release
 
@@ -12,6 +14,7 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -32,13 +35,24 @@ jobs:
       - name: Install ansible-core
         run: python -m pip install "ansible-core==2.22.*"
 
-      - name: Check that the tag is galaxy.yml's version
+      - name: Find the version, and check it is not released yet
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           version=$(sed -n 's/^version: *//p' galaxy.yml)
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "v$version" != "$GITHUB_REF_NAME" ]; then
             echo "The tag is $GITHUB_REF_NAME, but galaxy.yml says version $version." >&2
             exit 1
           fi
+          if [ "$GITHUB_REF_TYPE" != tag ] && [ "$GITHUB_REF_NAME" != main ]; then
+            echo "A release is made from main, not from $GITHUB_REF_NAME." >&2
+            exit 1
+          fi
+          if gh release view "v$version" > /dev/null 2>&1; then
+            echo "v$version is released already; galaxy.yml needs a new version." >&2
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
 
       - name: Build the tarball
         run: ansible-galaxy collection build --output-path dist
@@ -47,9 +61,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
-          tarball="dist/dukovo-system-$version.tar.gz"
+          tarball="dist/dukovo-system-$VERSION.tar.gz"
           sum=$(sha256sum "$tarball" | cut -d' ' -f1)
           printf 'The collection dukovo.system %s, as `ansible-galaxy collection build` made it from %s.\n\nSHA-256 of %s: `%s`\n' \
-            "$version" "$GITHUB_SHA" "${tarball#dist/}" "$sum" > notes.md
-          gh release create "$GITHUB_REF_NAME" "$tarball" --title "dukovo.system $version" --notes-file notes.md
+            "$VERSION" "$GITHUB_SHA" "${tarball#dist/}" "$sum" > notes.md
+          gh release create "v$VERSION" "$tarball" --target "$GITHUB_SHA" \
+            --title "dukovo.system $VERSION" --notes-file notes.md
